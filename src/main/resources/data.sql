@@ -16,12 +16,15 @@ SELECT c.id, t.name, t.slug, true, now(), now()
 FROM (VALUES
     ('industry', '반도체', 'semiconductor'),
     ('industry', '전기차', 'ev'),
-    ('macro', '금리', 'interest-rate'),
-    ('macro', '환율', 'fx'),
-    ('tech-ai', 'AI 에이전트', 'ai-agent')
+    ('industry', '에너지', 'energy'),
+    ('industry', '산업·기업', 'industry-topic'),
+    ('macro', '거시경제', 'macro-economy'),
+    ('tech-ai', '테크·AI', 'tech-ai-topic')
 ) AS t(category_slug, name, slug)
 JOIN categories c ON c.slug = t.category_slug
 ON CONFLICT (slug) DO NOTHING;
+
+UPDATE topics SET active = false WHERE slug IN ('interest-rate', 'fx', 'ai-agent');
 
 INSERT INTO creator_profiles (
     user_id, verification_status, bio, total_published_count, total_evaluated_count,
