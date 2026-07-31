@@ -20,7 +20,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -44,16 +43,14 @@ public class CardService {
 
     @Transactional
     public Card createDraft(Long authorId, Long categoryId, String claim, String successCondition,
-                             String failureCondition, String evidenceSummary, String evaluationMetric,
-                             BigDecimal fullHitThreshold, BigDecimal partialHitThreshold,
-                             LocalDateTime resultDueAt, List<Long> topicIds, List<CardSourceCreation> sources) {
+                             String failureCondition, String evidenceSummary, LocalDateTime resultDueAt,
+                             List<Long> topicIds, List<CardSourceCreation> sources) {
         User author = userRepository.findById(authorId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다. id=" + authorId));
         Category category = categoryRepository.findById(categoryId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 카테고리입니다. id=" + categoryId));
 
-        Card card = new Card(author, category, claim, successCondition, failureCondition, evidenceSummary,
-                evaluationMetric, fullHitThreshold, partialHitThreshold, resultDueAt);
+        Card card = new Card(author, category, claim, successCondition, failureCondition, evidenceSummary, resultDueAt);
         cardRepository.save(card);
 
         if (topicIds != null) {

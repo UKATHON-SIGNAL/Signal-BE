@@ -5,7 +5,6 @@ import com.signal.signalbe.domain.card.CardStatus;
 import com.signal.signalbe.domain.user.CreatorVerificationStatus;
 import com.signal.signalbe.domain.verification.AiVerificationStatus;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -22,9 +21,6 @@ public record CardResponse(
         String successCondition,
         String failureCondition,
         String evidenceSummary,
-        String evaluationMetric,
-        BigDecimal fullHitThreshold,
-        BigDecimal partialHitThreshold,
         LocalDateTime resultDueAt,
         Integer salePrice,
         CardStatus status,
@@ -57,9 +53,6 @@ public record CardResponse(
                 card.getSuccessCondition(),
                 card.getFailureCondition(),
                 card.getEvidenceSummary(),
-                card.getEvaluationMetric(),
-                card.getFullHitThreshold(),
-                card.getPartialHitThreshold(),
                 card.getResultDueAt(),
                 card.getSalePrice(),
                 card.getStatus(),

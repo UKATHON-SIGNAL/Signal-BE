@@ -48,8 +48,7 @@ public class CardResultService {
 
         ResolveResponse response = signalAiClient.resolve(new ResolveRequest(
                 card.getClaim(), card.getSuccessCondition(), card.getFailureCondition(),
-                actualResult, evidenceSummary, card.getEvaluationMetric(),
-                card.getFullHitThreshold(), card.getPartialHitThreshold()));
+                actualResult, evidenceSummary));
 
         cardResult.applyEvaluation(response.verdict(), response.aiReason(), LocalDateTime.now());
         card.complete();

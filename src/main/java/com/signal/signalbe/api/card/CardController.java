@@ -40,8 +40,7 @@ public class CardController {
 
         Card card = cardService.createDraft(
                 request.authorId(), request.categoryId(), request.claim(), request.successCondition(),
-                request.failureCondition(), request.evidenceSummary(), request.evaluationMetric(),
-                request.fullHitThreshold(), request.partialHitThreshold(), request.resultDueAt(),
+                request.failureCondition(), request.evidenceSummary(), request.resultDueAt(),
                 request.topicIds(), sources);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(CardResponse.from(cardService.getCardDetail(card.getId())));

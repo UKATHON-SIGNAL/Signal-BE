@@ -18,7 +18,6 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Getter
@@ -57,15 +56,6 @@ public class Card extends BaseTimeEntity {
     private String evidenceSummary;
 
     @Column(nullable = false)
-    private String evaluationMetric;
-
-    @Column(nullable = false)
-    private BigDecimal fullHitThreshold;
-
-    @Column(nullable = false)
-    private BigDecimal partialHitThreshold;
-
-    @Column(nullable = false)
     private LocalDateTime resultDueAt;
 
     private Integer salePrice;
@@ -77,17 +67,13 @@ public class Card extends BaseTimeEntity {
     private LocalDateTime publishedAt;
 
     public Card(User author, Category category, String claim, String successCondition,
-                String failureCondition, String evidenceSummary, String evaluationMetric,
-                BigDecimal fullHitThreshold, BigDecimal partialHitThreshold, LocalDateTime resultDueAt) {
+                String failureCondition, String evidenceSummary, LocalDateTime resultDueAt) {
         this.author = author;
         this.category = category;
         this.claim = claim;
         this.successCondition = successCondition;
         this.failureCondition = failureCondition;
         this.evidenceSummary = evidenceSummary;
-        this.evaluationMetric = evaluationMetric;
-        this.fullHitThreshold = fullHitThreshold;
-        this.partialHitThreshold = partialHitThreshold;
         this.resultDueAt = resultDueAt;
         this.status = CardStatus.DRAFT;
     }
