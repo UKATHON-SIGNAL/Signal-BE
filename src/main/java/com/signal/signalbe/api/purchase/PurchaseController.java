@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -31,5 +32,11 @@ public class PurchaseController {
     @GetMapping
     public List<PurchaseResponse> getPurchases(@RequestParam Long buyerId) {
         return purchaseService.getPurchasesByBuyer(buyerId).stream().map(PurchaseResponse::from).toList();
+    }
+
+    @PostMapping("/{purchaseId}/confirm-result")
+    public ResponseEntity<Void> confirmResult(@PathVariable Long purchaseId) {
+        purchaseService.confirmResult(purchaseId);
+        return ResponseEntity.noContent().build();
     }
 }

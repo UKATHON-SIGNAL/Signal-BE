@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -40,5 +41,12 @@ public class PurchaseService {
 
     public List<Purchase> getPurchasesByBuyer(Long buyerId) {
         return purchaseRepository.findByBuyerId(buyerId);
+    }
+
+    @Transactional
+    public void confirmResult(Long purchaseId) {
+        Purchase purchase = purchaseRepository.findById(purchaseId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 구매입니다. id=" + purchaseId));
+        purchase.markResultChecked(LocalDateTime.now());
     }
 }
