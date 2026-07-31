@@ -8,6 +8,8 @@ import com.signal.signalbe.domain.category.Category;
 import com.signal.signalbe.domain.category.CategoryRepository;
 import com.signal.signalbe.domain.category.Topic;
 import com.signal.signalbe.domain.category.TopicRepository;
+import com.signal.signalbe.domain.user.CreatorProfile;
+import com.signal.signalbe.domain.user.CreatorProfileRepository;
 import com.signal.signalbe.domain.user.User;
 import com.signal.signalbe.domain.user.UserRepository;
 import com.signal.signalbe.domain.verification.AiVerification;
@@ -32,6 +34,7 @@ public class CardService {
     private final CategoryRepository categoryRepository;
     private final TopicRepository topicRepository;
     private final AiVerificationRepository aiVerificationRepository;
+    private final CreatorProfileRepository creatorProfileRepository;
     private final SignalAiClient signalAiClient;
 
     @Transactional
@@ -124,6 +127,11 @@ public class CardService {
             throw new IllegalStateException("발행할 수 없는 상태입니다. 현재 상태=" + card.getStatus());
         }
         card.publish(LocalDateTime.now());
+
+        CreatorProfile profile = creatorProfileRepository.findByUserId(card.getAuthor().getId())
+                .orElseGet(() -> creatorProfileRepository.save(new CreatorProfile(card.getAuthor())));
+        profile.increasePublishedCount();
+
         return card;
     }
 

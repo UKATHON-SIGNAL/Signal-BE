@@ -87,11 +87,17 @@ public class CreatorProfile extends BaseTimeEntity {
         this.successRate = BigDecimal.valueOf(this.successCount)
                 .divide(BigDecimal.valueOf(this.totalEvaluatedCount), 2, java.math.RoundingMode.HALF_UP)
                 .multiply(BigDecimal.valueOf(100));
+        this.reputationScore = this.successRate;
+        this.grade = computeGrade(this.successRate);
     }
 
-    public void updateGrade(CreatorGrade grade, BigDecimal reputationScore, BigDecimal percentileRank) {
-        this.grade = grade;
-        this.reputationScore = reputationScore;
-        this.percentileRank = percentileRank;
+    private static CreatorGrade computeGrade(BigDecimal successRate) {
+        if (successRate.compareTo(BigDecimal.valueOf(80)) >= 0) {
+            return CreatorGrade.A;
+        }
+        if (successRate.compareTo(BigDecimal.valueOf(50)) >= 0) {
+            return CreatorGrade.B;
+        }
+        return CreatorGrade.C;
     }
 }
