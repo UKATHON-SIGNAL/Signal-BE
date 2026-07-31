@@ -161,6 +161,7 @@ public class CardService {
         List<CardDetail> details = getCards(criteria.status()).stream().map(this::buildDetail).toList();
 
         List<CardDetail> filtered = details.stream()
+                .filter(d -> criteria.authorId() == null || d.card().getAuthor().getId().equals(criteria.authorId()))
                 .filter(d -> criteria.priceMin() == null
                         || (d.card().getSalePrice() != null && d.card().getSalePrice() >= criteria.priceMin()))
                 .filter(d -> criteria.priceMax() == null

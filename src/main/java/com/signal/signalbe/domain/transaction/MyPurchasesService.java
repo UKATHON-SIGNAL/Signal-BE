@@ -3,6 +3,8 @@ package com.signal.signalbe.domain.transaction;
 import com.signal.signalbe.domain.card.Card;
 import com.signal.signalbe.domain.result.CardResultRepository;
 import com.signal.signalbe.domain.result.ResultStatus;
+import com.signal.signalbe.domain.verification.AiVerificationRepository;
+import com.signal.signalbe.domain.verification.AiVerificationStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,6 +23,7 @@ public class MyPurchasesService {
     private final PurchaseRepository purchaseRepository;
     private final BookmarkRepository bookmarkRepository;
     private final CardResultRepository cardResultRepository;
+    private final AiVerificationRepository aiVerificationRepository;
 
     public List<MyPurchaseItem> getMyPurchases(Long userId) {
         List<Purchase> purchases = purchaseRepository.findByBuyerId(userId);
@@ -38,12 +41,15 @@ public class MyPurchasesService {
         for (Purchase purchase : purchases) {
             Card card = purchase.getCard();
             boolean bookmarked = bookmarkedCardIds.contains(card.getId());
-            items.add(new MyPurchaseItem(purchase, null, card, resolveStatus(purchase), bookmarked));
+            items.add(new MyPurchaseItem(
+                    purchase, null, card, resolveStatus(purchase), bookmarked, resolveAiVerificationStatus(card)));
         }
 
         for (Bookmark bookmark : bookmarks) {
             if (!purchasedCardIds.contains(bookmark.getCard().getId())) {
-                items.add(new MyPurchaseItem(null, bookmark, bookmark.getCard(), MyPurchaseStatus.SAVED, true));
+                items.add(new MyPurchaseItem(
+                        null, bookmark, bookmark.getCard(), MyPurchaseStatus.SAVED, true,
+                        resolveAiVerificationStatus(bookmark.getCard())));
             }
         }
 
@@ -62,6 +68,13 @@ public class MyPurchasesService {
                 .count();
 
         return new MyPurchasesSummary(purchases.size(), totalAmount, pendingConfirmationCount, bookmarks.size());
+    }
+
+    private AiVerificationStatus resolveAiVerificationStatus(Card card) {
+        return aiVerificationRepository.findByCardIdOrderByCreatedAtDesc(card.getId()).stream()
+                .findFirst()
+                .map(verification -> verification.getStatus())
+                .orElse(null);
     }
 
     private MyPurchaseStatus resolveStatus(Purchase purchase) {

@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 
 public record CardSearchCriteria(
         CardStatus status,
+        Long authorId,
         Integer priceMin,
         Integer priceMax,
         LocalDateTime resultDueFrom,
