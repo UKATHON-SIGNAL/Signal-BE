@@ -226,7 +226,7 @@ public class CardService {
                 .stream()
                 .findFirst()
                 .orElse(null);
-        int sourceCount = cardSourceRepository.findByCardId(card.getId()).size();
-        return new CardDetail(card, authorProfile, latestVerification, sourceCount);
+        List<CardSource> sources = cardSourceRepository.findByCardId(card.getId());
+        return new CardDetail(card, authorProfile, latestVerification, sources);
     }
 }

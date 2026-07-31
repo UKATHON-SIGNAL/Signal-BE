@@ -6,6 +6,7 @@ import com.signal.signalbe.domain.user.CreatorVerificationStatus;
 import com.signal.signalbe.domain.verification.AiVerificationStatus;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 public record CardResponse(
         Long id,
@@ -27,6 +28,7 @@ public record CardResponse(
         Integer recommendedPriceMin,
         Integer recommendedPriceMax,
         int sourceCount,
+        List<SourceResponse> sources,
         LocalDateTime publishedAt,
         LocalDateTime createdAt
 ) {
@@ -57,7 +59,8 @@ public record CardResponse(
                 latestVerification != null ? latestVerification.getStatus() : null,
                 latestVerification != null ? latestVerification.getRecommendedPriceMin() : null,
                 latestVerification != null ? latestVerification.getRecommendedPriceMax() : null,
-                detail.sourceCount(),
+                detail.sources().size(),
+                detail.sources().stream().map(SourceResponse::from).toList(),
                 card.getPublishedAt(),
                 card.getCreatedAt()
         );
