@@ -1,0 +1,17 @@
+spring:
+  application:
+    name: signal-be
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/signal}
+    username: ${DB_USERNAME:signal}
+    password: ${DB_PASSWORD:signal}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+server:
+  port: 8080
