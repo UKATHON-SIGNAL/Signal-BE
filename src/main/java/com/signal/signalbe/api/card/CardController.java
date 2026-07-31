@@ -1,12 +1,16 @@
 package com.signal.signalbe.api.card;
 
 import com.signal.signalbe.domain.card.Card;
+import com.signal.signalbe.domain.card.CardSearchCriteria;
 import com.signal.signalbe.domain.card.CardService;
+import com.signal.signalbe.domain.card.CardSort;
 import com.signal.signalbe.domain.card.CardSourceCreation;
 import com.signal.signalbe.domain.card.CardStatus;
 import com.signal.signalbe.domain.verification.AiVerification;
+import com.signal.signalbe.domain.verification.AiVerificationStatus;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -60,8 +65,17 @@ public class CardController {
     }
 
     @GetMapping
-    public List<CardResponse> getCards(@RequestParam(required = false) CardStatus status) {
-        return cardService.getCardDetails(status).stream().map(CardResponse::from).toList();
+    public List<CardResponse> getCards(
+            @RequestParam(required = false) CardStatus status,
+            @RequestParam(required = false) Integer priceMin,
+            @RequestParam(required = false) Integer priceMax,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime resultDueFrom,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime resultDueTo,
+            @RequestParam(required = false) AiVerificationStatus aiVerificationStatus,
+            @RequestParam(defaultValue = "LATEST") CardSort sort) {
+        CardSearchCriteria criteria = new CardSearchCriteria(
+                status, priceMin, priceMax, resultDueFrom, resultDueTo, aiVerificationStatus, sort);
+        return cardService.getCardDetails(criteria).stream().map(CardResponse::from).toList();
     }
 
     @GetMapping("/{cardId}")

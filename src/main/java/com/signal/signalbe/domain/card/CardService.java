@@ -152,8 +152,33 @@ public class CardService {
         return buildDetail(getCard(cardId));
     }
 
-    public List<CardDetail> getCardDetails(CardStatus status) {
-        return getCards(status).stream().map(this::buildDetail).toList();
+    public List<CardDetail> getCardDetails(CardSearchCriteria criteria) {
+        List<CardDetail> details = getCards(criteria.status()).stream().map(this::buildDetail).toList();
+
+        List<CardDetail> filtered = details.stream()
+                .filter(d -> criteria.priceMin() == null
+                        || (d.card().getSalePrice() != null && d.card().getSalePrice() >= criteria.priceMin()))
+                .filter(d -> criteria.priceMax() == null
+                        || (d.card().getSalePrice() != null && d.card().getSalePrice() <= criteria.priceMax()))
+                .filter(d -> criteria.resultDueFrom() == null
+                        || !d.card().getResultDueAt().isBefore(criteria.resultDueFrom()))
+                .filter(d -> criteria.resultDueTo() == null
+                        || !d.card().getResultDueAt().isAfter(criteria.resultDueTo()))
+                .filter(d -> criteria.aiVerificationStatus() == null
+                        || (d.latestVerification() != null
+                        && d.latestVerification().getStatus() == criteria.aiVerificationStatus()))
+                .toList();
+
+        Comparator<CardDetail> comparator = switch (criteria.sort() == null ? CardSort.LATEST : criteria.sort()) {
+            case PRICE_ASC -> Comparator.comparing(
+                    (CardDetail d) -> d.card().getSalePrice(), Comparator.nullsLast(Comparator.naturalOrder()));
+            case PRICE_DESC -> Comparator.comparing(
+                    (CardDetail d) -> d.card().getSalePrice(), Comparator.nullsLast(Comparator.naturalOrder())).reversed();
+            case RESULT_DUE_SOON -> Comparator.comparing(d -> d.card().getResultDueAt());
+            case LATEST -> Comparator.comparing((CardDetail d) -> d.card().getCreatedAt()).reversed();
+        };
+
+        return filtered.stream().sorted(comparator).toList();
     }
 
     public List<CardDetail> getRecommendedCards(Long userId, int limit) {
