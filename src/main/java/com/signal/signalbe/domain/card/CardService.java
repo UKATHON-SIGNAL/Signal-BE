@@ -9,12 +9,16 @@ import com.signal.signalbe.domain.category.CategoryRepository;
 import com.signal.signalbe.domain.category.Topic;
 import com.signal.signalbe.domain.category.TopicRepository;
 import com.signal.signalbe.domain.category.UserInterestRepository;
+import com.signal.signalbe.domain.transaction.BookmarkRepository;
+import com.signal.signalbe.domain.transaction.MyPurchaseStatus;
+import com.signal.signalbe.domain.transaction.Purchase;
 import com.signal.signalbe.domain.transaction.PurchaseRepository;
 import com.signal.signalbe.domain.user.CreatorProfile;
 import com.signal.signalbe.domain.user.CreatorProfileRepository;
 import com.signal.signalbe.domain.user.CreatorProfileService;
 import com.signal.signalbe.domain.user.User;
 import com.signal.signalbe.domain.user.UserRepository;
+import com.signal.signalbe.domain.result.CardResultRepository;
 import com.signal.signalbe.domain.verification.AiVerification;
 import com.signal.signalbe.domain.verification.AiVerificationRepository;
 import com.signal.signalbe.domain.verification.AiVerificationStatus;
@@ -45,6 +49,8 @@ public class CardService {
     private final CreatorProfileService creatorProfileService;
     private final UserInterestRepository userInterestRepository;
     private final PurchaseRepository purchaseRepository;
+    private final BookmarkRepository bookmarkRepository;
+    private final CardResultRepository cardResultRepository;
     private final SignalAiClient signalAiClient;
 
     @Transactional
@@ -269,17 +275,28 @@ public class CardService {
     }
 
     private CardDetail buildDetail(Card card) {
-        return buildDetail(card, true);
+        return buildDetail(card, true, false, null);
     }
 
     private CardDetail buildDetail(Card card, Long viewerId) {
+        Purchase viewerPurchase = viewerId == null ? null
+                : purchaseRepository.findByBuyerIdAndCardId(viewerId, card.getId()).orElse(null);
         boolean hasFullAccess = viewerId != null
-                && (viewerId.equals(card.getAuthor().getId())
-                || purchaseRepository.existsByBuyerIdAndCardId(viewerId, card.getId()));
-        return buildDetail(card, hasFullAccess);
+                && (viewerId.equals(card.getAuthor().getId()) || viewerPurchase != null);
+        boolean bookmarked = viewerId != null && bookmarkRepository.existsByUserIdAndCardId(viewerId, card.getId());
+        MyPurchaseStatus resultStatus = viewerPurchase == null ? null
+                : MyPurchaseStatus.resolve(viewerPurchase, cardResultRepository.findByCardId(card.getId()).orElse(null));
+        LocalDateTime purchasedAt = viewerPurchase == null ? null : viewerPurchase.getPurchasedAt();
+        return buildDetail(card, hasFullAccess, bookmarked, resultStatus, purchasedAt);
     }
 
-    private CardDetail buildDetail(Card card, boolean hasFullAccess) {
+    private CardDetail buildDetail(Card card, boolean hasFullAccess, boolean bookmarked, MyPurchaseStatus resultStatus) {
+        return buildDetail(card, hasFullAccess, bookmarked, resultStatus, null);
+    }
+
+    private CardDetail buildDetail(
+            Card card, boolean hasFullAccess, boolean bookmarked, MyPurchaseStatus resultStatus,
+            LocalDateTime purchasedAt) {
         CreatorProfile authorProfile = creatorProfileRepository.findByUserId(card.getAuthor().getId()).orElse(null);
         AiVerification latestVerification = aiVerificationRepository
                 .findByCardIdOrderByCreatedAtDesc(card.getId())
@@ -288,6 +305,8 @@ public class CardService {
                 .orElse(null);
         List<CardSource> sources = cardSourceRepository.findByCardId(card.getId());
         int purchaseCount = purchaseRepository.findByCardId(card.getId()).size();
-        return new CardDetail(card, authorProfile, latestVerification, sources, purchaseCount, hasFullAccess);
+        return new CardDetail(
+                card, authorProfile, latestVerification, sources, purchaseCount, hasFullAccess, bookmarked,
+                resultStatus, purchasedAt);
     }
 }

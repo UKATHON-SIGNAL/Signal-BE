@@ -2,6 +2,7 @@ package com.signal.signalbe.api.card;
 
 import com.signal.signalbe.domain.card.CardDetail;
 import com.signal.signalbe.domain.card.CardStatus;
+import com.signal.signalbe.domain.transaction.MyPurchaseStatus;
 import com.signal.signalbe.domain.user.CreatorVerificationStatus;
 import com.signal.signalbe.domain.verification.AiVerificationStatus;
 
@@ -32,7 +33,10 @@ public record CardResponse(
         int purchaseCount,
         LocalDateTime publishedAt,
         LocalDateTime createdAt,
-        boolean hasFullAccess
+        boolean hasFullAccess,
+        boolean bookmarked,
+        MyPurchaseStatus resultStatus,
+        LocalDateTime purchasedAt
 ) {
     public static CardResponse from(CardDetail detail) {
         var card = detail.card();
@@ -67,7 +71,10 @@ public record CardResponse(
                 detail.purchaseCount(),
                 card.getPublishedAt(),
                 card.getCreatedAt(),
-                hasFullAccess
+                hasFullAccess,
+                detail.bookmarked(),
+                detail.resultStatus(),
+                detail.purchasedAt()
         );
     }
 }

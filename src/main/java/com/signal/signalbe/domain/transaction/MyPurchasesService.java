@@ -1,6 +1,7 @@
 package com.signal.signalbe.domain.transaction;
 
 import com.signal.signalbe.domain.card.Card;
+import com.signal.signalbe.domain.category.UserInterestRepository;
 import com.signal.signalbe.domain.result.CardResult;
 import com.signal.signalbe.domain.result.CardResultRepository;
 import com.signal.signalbe.domain.result.ResultStatus;
@@ -26,6 +27,7 @@ public class MyPurchasesService {
     private final BookmarkRepository bookmarkRepository;
     private final CardResultRepository cardResultRepository;
     private final AiVerificationRepository aiVerificationRepository;
+    private final UserInterestRepository userInterestRepository;
 
     public List<MyPurchaseItem> getMyPurchases(Long userId) {
         List<Purchase> purchases = purchaseRepository.findByBuyerId(userId);
@@ -69,7 +71,10 @@ public class MyPurchasesService {
                 .filter(purchase -> resolveStatus(purchase) == MyPurchaseStatus.PENDING_CONFIRMATION)
                 .count();
 
-        return new MyPurchasesSummary(purchases.size(), totalAmount, pendingConfirmationCount, bookmarks.size());
+        int interestTopicCount = userInterestRepository.findByUserId(userId).size();
+
+        return new MyPurchasesSummary(
+                purchases.size(), totalAmount, pendingConfirmationCount, bookmarks.size(), interestTopicCount);
     }
 
     public List<RecentUpdate> getRecentUpdates(Long userId, int limit) {
@@ -95,11 +100,7 @@ public class MyPurchasesService {
     }
 
     private MyPurchaseStatus resolveStatus(Purchase purchase) {
-        return cardResultRepository.findByCardId(purchase.getCard().getId())
-                .filter(result -> result.getStatus() == ResultStatus.EVALUATED)
-                .map(result -> purchase.getResultCheckedAt() != null
-                        ? MyPurchaseStatus.CONFIRMED
-                        : MyPurchaseStatus.PENDING_CONFIRMATION)
-                .orElse(MyPurchaseStatus.IN_PROGRESS);
+        CardResult result = cardResultRepository.findByCardId(purchase.getCard().getId()).orElse(null);
+        return MyPurchaseStatus.resolve(purchase, result);
     }
 }
