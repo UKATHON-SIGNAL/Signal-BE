@@ -12,6 +12,7 @@ import com.signal.signalbe.domain.category.UserInterestRepository;
 import com.signal.signalbe.domain.transaction.PurchaseRepository;
 import com.signal.signalbe.domain.user.CreatorProfile;
 import com.signal.signalbe.domain.user.CreatorProfileRepository;
+import com.signal.signalbe.domain.user.CreatorProfileService;
 import com.signal.signalbe.domain.user.User;
 import com.signal.signalbe.domain.user.UserRepository;
 import com.signal.signalbe.domain.verification.AiVerification;
@@ -22,6 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -39,6 +41,7 @@ public class CardService {
     private final TopicRepository topicRepository;
     private final AiVerificationRepository aiVerificationRepository;
     private final CreatorProfileRepository creatorProfileRepository;
+    private final CreatorProfileService creatorProfileService;
     private final UserInterestRepository userInterestRepository;
     private final PurchaseRepository purchaseRepository;
     private final SignalAiClient signalAiClient;
@@ -78,6 +81,7 @@ public class CardService {
 
         List<CardSource> sources = cardSourceRepository.findByCardId(cardId);
         CreatorProfile authorProfile = creatorProfileRepository.findByUserId(card.getAuthor().getId()).orElse(null);
+        long daysUntilResult = ChronoUnit.DAYS.between(LocalDateTime.now(), card.getResultDueAt());
         VerifyResponse response = signalAiClient.verify(new VerifyRequest(
                 card.getClaim(),
                 card.getSuccessCondition(),
@@ -86,7 +90,9 @@ public class CardService {
                 card.getCategory().getName(),
                 sources.stream().map(s -> new SourceInput(s.getUrl(), s.getTitle())).toList(),
                 authorProfile != null ? authorProfile.getAverageScore() : null,
-                authorProfile != null ? authorProfile.getTotalEvaluatedCount() : 0
+                authorProfile != null ? authorProfile.getTotalEvaluatedCount() : 0,
+                creatorProfileService.getSourceReliability(card.getAuthor().getId()),
+                daysUntilResult
         ));
 
         AiVerification verification = new AiVerification(card);
