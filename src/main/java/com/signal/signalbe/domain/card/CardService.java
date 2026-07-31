@@ -8,6 +8,7 @@ import com.signal.signalbe.domain.category.Category;
 import com.signal.signalbe.domain.category.CategoryRepository;
 import com.signal.signalbe.domain.category.Topic;
 import com.signal.signalbe.domain.category.TopicRepository;
+import com.signal.signalbe.domain.category.UserInterestRepository;
 import com.signal.signalbe.domain.user.CreatorProfile;
 import com.signal.signalbe.domain.user.CreatorProfileRepository;
 import com.signal.signalbe.domain.user.User;
@@ -20,6 +21,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 @Service
@@ -35,6 +38,7 @@ public class CardService {
     private final TopicRepository topicRepository;
     private final AiVerificationRepository aiVerificationRepository;
     private final CreatorProfileRepository creatorProfileRepository;
+    private final UserInterestRepository userInterestRepository;
     private final SignalAiClient signalAiClient;
 
     @Transactional
@@ -142,5 +146,54 @@ public class CardService {
 
     public List<Card> getCards(CardStatus status) {
         return status == null ? cardRepository.findAll() : cardRepository.findByStatus(status);
+    }
+
+    public CardDetail getCardDetail(Long cardId) {
+        return buildDetail(getCard(cardId));
+    }
+
+    public List<CardDetail> getCardDetails(CardStatus status) {
+        return getCards(status).stream().map(this::buildDetail).toList();
+    }
+
+    public List<CardDetail> getRecommendedCards(Long userId, int limit) {
+        List<Long> topicIds = userInterestRepository.findByUserId(userId).stream()
+                .map(interest -> interest.getTopic().getId())
+                .toList();
+
+        List<Card> matched = topicIds.isEmpty() ? List.of() :
+                cardTopicRepository.findByTopicIdIn(topicIds).stream()
+                        .map(CardTopic::getCard)
+                        .filter(card -> card.getStatus() == CardStatus.PUBLISHED)
+                        .distinct()
+                        .toList();
+
+        List<Card> result = new ArrayList<>(matched.stream().limit(limit).toList());
+
+        if (result.size() < limit) {
+            List<Card> fallback = cardRepository.findByStatus(CardStatus.PUBLISHED).stream()
+                    .filter(card -> !result.contains(card))
+                    .sorted(Comparator.comparing(Card::getPublishedAt, Comparator.nullsLast(Comparator.reverseOrder())))
+                    .toList();
+            for (Card card : fallback) {
+                if (result.size() >= limit) {
+                    break;
+                }
+                result.add(card);
+            }
+        }
+
+        return result.stream().map(this::buildDetail).toList();
+    }
+
+    private CardDetail buildDetail(Card card) {
+        CreatorProfile authorProfile = creatorProfileRepository.findByUserId(card.getAuthor().getId()).orElse(null);
+        AiVerification latestVerification = aiVerificationRepository
+                .findByCardIdOrderByCreatedAtDesc(card.getId())
+                .stream()
+                .findFirst()
+                .orElse(null);
+        int sourceCount = cardSourceRepository.findByCardId(card.getId()).size();
+        return new CardDetail(card, authorProfile, latestVerification, sourceCount);
     }
 }

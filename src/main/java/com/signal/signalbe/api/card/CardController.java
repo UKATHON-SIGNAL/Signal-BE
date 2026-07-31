@@ -38,7 +38,7 @@ public class CardController {
                 request.failureCondition(), request.evidenceSummary(), request.resultDueAt(),
                 request.topicIds(), sources);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(CardResponse.from(card));
+        return ResponseEntity.status(HttpStatus.CREATED).body(CardResponse.from(cardService.getCardDetail(card.getId())));
     }
 
     @PostMapping("/{cardId}/ai-review")
@@ -49,23 +49,29 @@ public class CardController {
 
     @PutMapping("/{cardId}/price")
     public CardResponse setPrice(@PathVariable Long cardId, @Valid @RequestBody PriceSettingRequest request) {
-        Card card = cardService.setPrice(cardId, request.salePrice());
-        return CardResponse.from(card);
+        cardService.setPrice(cardId, request.salePrice());
+        return CardResponse.from(cardService.getCardDetail(cardId));
     }
 
     @PostMapping("/{cardId}/publish")
     public CardResponse publish(@PathVariable Long cardId) {
-        Card card = cardService.publish(cardId);
-        return CardResponse.from(card);
+        cardService.publish(cardId);
+        return CardResponse.from(cardService.getCardDetail(cardId));
     }
 
     @GetMapping
     public List<CardResponse> getCards(@RequestParam(required = false) CardStatus status) {
-        return cardService.getCards(status).stream().map(CardResponse::from).toList();
+        return cardService.getCardDetails(status).stream().map(CardResponse::from).toList();
     }
 
     @GetMapping("/{cardId}")
     public CardResponse getCard(@PathVariable Long cardId) {
-        return CardResponse.from(cardService.getCard(cardId));
+        return CardResponse.from(cardService.getCardDetail(cardId));
+    }
+
+    @GetMapping("/recommended")
+    public List<CardResponse> getRecommendedCards(
+            @RequestParam Long userId, @RequestParam(defaultValue = "3") int limit) {
+        return cardService.getRecommendedCards(userId, limit).stream().map(CardResponse::from).toList();
     }
 }

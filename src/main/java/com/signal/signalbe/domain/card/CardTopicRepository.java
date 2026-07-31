@@ -7,4 +7,6 @@ import java.util.List;
 public interface CardTopicRepository extends JpaRepository<CardTopic, Long> {
 
     List<CardTopic> findByCardId(Long cardId);
+
+    List<CardTopic> findByTopicIdIn(List<Long> topicIds);
 }
