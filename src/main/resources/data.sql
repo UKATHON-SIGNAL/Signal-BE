@@ -22,3 +22,16 @@ FROM (VALUES
 ) AS t(category_slug, name, slug)
 JOIN categories c ON c.slug = t.category_slug
 ON CONFLICT (slug) DO NOTHING;
+
+INSERT INTO creator_profiles (
+    user_id, verification_status, bio, total_published_count, total_evaluated_count,
+    invalid_count, total_score, average_score, grade, created_at, updated_at
+)
+SELECT u.id, 'VERIFIED', b.bio, 0, 0, 0, 0, 0, 'UNRATED', now(), now()
+FROM (VALUES
+    ('kim@example.com', '반도체·전기차 산업 분석가'),
+    ('lee@example.com', '거시경제 전문 애널리스트'),
+    ('admin@example.com', '테크·AI 트렌드 리서처')
+) AS b(email, bio)
+JOIN users u ON u.email = b.email
+ON CONFLICT (user_id) DO NOTHING;

@@ -8,6 +8,7 @@ import java.math.BigDecimal;
 
 public record CreatorProfileResponse(
         Long userId,
+        String bio,
         int totalPublishedCount,
         int totalEvaluatedCount,
         int invalidCount,
@@ -19,6 +20,7 @@ public record CreatorProfileResponse(
     public static CreatorProfileResponse from(CreatorProfile profile, BigDecimal sourceReliability) {
         return new CreatorProfileResponse(
                 profile.getUser().getId(),
+                profile.getBio(),
                 profile.getTotalPublishedCount(),
                 profile.getTotalEvaluatedCount(),
                 profile.getInvalidCount(),
