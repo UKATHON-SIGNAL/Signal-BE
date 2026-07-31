@@ -9,9 +9,16 @@ spring:
     hibernate:
       ddl-auto: update
     show-sql: true
+    defer-datasource-initialization: true
     properties:
       hibernate:
         format_sql: true
+  sql:
+    init:
+      mode: always
 
 server:
   port: 8080
+
+signal-ai:
+  base-url: ${SIGNAL_AI_BASE_URL:http://localhost:8001}
