@@ -9,6 +9,7 @@ import com.signal.signalbe.domain.category.CategoryRepository;
 import com.signal.signalbe.domain.category.Topic;
 import com.signal.signalbe.domain.category.TopicRepository;
 import com.signal.signalbe.domain.category.UserInterestRepository;
+import com.signal.signalbe.domain.transaction.PurchaseRepository;
 import com.signal.signalbe.domain.user.CreatorProfile;
 import com.signal.signalbe.domain.user.CreatorProfileRepository;
 import com.signal.signalbe.domain.user.User;
@@ -39,6 +40,7 @@ public class CardService {
     private final AiVerificationRepository aiVerificationRepository;
     private final CreatorProfileRepository creatorProfileRepository;
     private final UserInterestRepository userInterestRepository;
+    private final PurchaseRepository purchaseRepository;
     private final SignalAiClient signalAiClient;
 
     @Transactional
@@ -230,6 +232,7 @@ public class CardService {
                 .findFirst()
                 .orElse(null);
         List<CardSource> sources = cardSourceRepository.findByCardId(card.getId());
-        return new CardDetail(card, authorProfile, latestVerification, sources);
+        int purchaseCount = purchaseRepository.findByCardId(card.getId()).size();
+        return new CardDetail(card, authorProfile, latestVerification, sources, purchaseCount);
     }
 }

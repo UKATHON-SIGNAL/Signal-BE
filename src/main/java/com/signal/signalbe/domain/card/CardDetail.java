@@ -6,5 +6,6 @@ import com.signal.signalbe.domain.verification.AiVerification;
 import java.util.List;
 
 public record CardDetail(
-        Card card, CreatorProfile authorProfile, AiVerification latestVerification, List<CardSource> sources) {
+        Card card, CreatorProfile authorProfile, AiVerification latestVerification,
+        List<CardSource> sources, int purchaseCount) {
 }

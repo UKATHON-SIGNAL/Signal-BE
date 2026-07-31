@@ -1,5 +1,7 @@
 package com.signal.signalbe.client.signalai;
 
+import com.signal.signalbe.client.signalai.dto.BriefingRequest;
+import com.signal.signalbe.client.signalai.dto.BriefingResponse;
 import com.signal.signalbe.client.signalai.dto.DraftAssistRequest;
 import com.signal.signalbe.client.signalai.dto.DraftAssistResponse;
 import com.signal.signalbe.client.signalai.dto.ResolveRequest;
@@ -28,6 +30,10 @@ public class SignalAiClient {
 
     public ResolveResponse resolve(ResolveRequest request) {
         return post("/api/resolve", request, ResolveResponse.class);
+    }
+
+    public BriefingResponse briefing(BriefingRequest request) {
+        return post("/api/briefing", request, BriefingResponse.class);
     }
 
     private <T> T post(String path, Object body, Class<T> responseType) {

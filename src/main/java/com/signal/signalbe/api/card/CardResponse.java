@@ -29,6 +29,7 @@ public record CardResponse(
         Integer recommendedPriceMax,
         int sourceCount,
         List<SourceResponse> sources,
+        int purchaseCount,
         LocalDateTime publishedAt,
         LocalDateTime createdAt
 ) {
@@ -61,6 +62,7 @@ public record CardResponse(
                 latestVerification != null ? latestVerification.getRecommendedPriceMax() : null,
                 detail.sources().size(),
                 detail.sources().stream().map(SourceResponse::from).toList(),
+                detail.purchaseCount(),
                 card.getPublishedAt(),
                 card.getCreatedAt()
         );
