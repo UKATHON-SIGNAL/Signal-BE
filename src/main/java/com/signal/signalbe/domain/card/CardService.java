@@ -75,13 +75,16 @@ public class CardService {
         card.startAiReview();
 
         List<CardSource> sources = cardSourceRepository.findByCardId(cardId);
+        CreatorProfile authorProfile = creatorProfileRepository.findByUserId(card.getAuthor().getId()).orElse(null);
         VerifyResponse response = signalAiClient.verify(new VerifyRequest(
                 card.getClaim(),
                 card.getSuccessCondition(),
                 card.getFailureCondition(),
                 card.getEvidenceSummary(),
                 card.getCategory().getName(),
-                sources.stream().map(s -> new SourceInput(s.getUrl(), s.getTitle())).toList()
+                sources.stream().map(s -> new SourceInput(s.getUrl(), s.getTitle())).toList(),
+                authorProfile != null ? authorProfile.getAverageScore() : null,
+                authorProfile != null ? authorProfile.getTotalEvaluatedCount() : 0
         ));
 
         AiVerification verification = new AiVerification(card);
