@@ -167,6 +167,10 @@ public class CardService {
                 .filter(d -> criteria.aiVerificationStatus() == null
                         || (d.latestVerification() != null
                         && d.latestVerification().getStatus() == criteria.aiVerificationStatus()))
+                .filter(d -> criteria.keyword() == null || criteria.keyword().isBlank()
+                        || containsIgnoreCase(d.card().getClaim(), criteria.keyword())
+                        || containsIgnoreCase(d.card().getTitle(), criteria.keyword())
+                        || containsIgnoreCase(d.card().getAuthor().getNickname(), criteria.keyword()))
                 .toList();
 
         Comparator<CardDetail> comparator = switch (criteria.sort() == null ? CardSort.LATEST : criteria.sort()) {
@@ -209,6 +213,10 @@ public class CardService {
         }
 
         return result.stream().map(this::buildDetail).toList();
+    }
+
+    private static boolean containsIgnoreCase(String source, String keyword) {
+        return source != null && source.toLowerCase().contains(keyword.toLowerCase());
     }
 
     private CardDetail buildDetail(Card card) {

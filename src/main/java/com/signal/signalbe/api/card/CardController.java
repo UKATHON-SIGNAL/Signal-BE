@@ -72,9 +72,10 @@ public class CardController {
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime resultDueFrom,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime resultDueTo,
             @RequestParam(required = false) AiVerificationStatus aiVerificationStatus,
+            @RequestParam(required = false) String keyword,
             @RequestParam(defaultValue = "LATEST") CardSort sort) {
         CardSearchCriteria criteria = new CardSearchCriteria(
-                status, priceMin, priceMax, resultDueFrom, resultDueTo, aiVerificationStatus, sort);
+                status, priceMin, priceMax, resultDueFrom, resultDueTo, aiVerificationStatus, keyword, sort);
         return cardService.getCardDetails(criteria).stream().map(CardResponse::from).toList();
     }
 

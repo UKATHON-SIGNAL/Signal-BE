@@ -11,6 +11,7 @@ public record CardSearchCriteria(
         LocalDateTime resultDueFrom,
         LocalDateTime resultDueTo,
         AiVerificationStatus aiVerificationStatus,
+        String keyword,
         CardSort sort
 ) {
 }
