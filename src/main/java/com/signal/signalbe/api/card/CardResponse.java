@@ -31,7 +31,8 @@ public record CardResponse(
         List<SourceResponse> sources,
         int purchaseCount,
         LocalDateTime publishedAt,
-        LocalDateTime createdAt
+        LocalDateTime createdAt,
+        boolean hasFullAccess
 ) {
     public static CardResponse from(CardDetail detail) {
         var card = detail.card();
@@ -40,6 +41,7 @@ public record CardResponse(
 
         boolean verified = authorProfile != null
                 && authorProfile.getVerificationStatus() == CreatorVerificationStatus.VERIFIED;
+        boolean hasFullAccess = detail.hasFullAccess();
 
         return new CardResponse(
                 card.getId(),
@@ -51,9 +53,9 @@ public record CardResponse(
                 card.getTitle(),
                 card.getSummary(),
                 card.getClaim(),
-                card.getSuccessCondition(),
-                card.getFailureCondition(),
-                card.getEvidenceSummary(),
+                hasFullAccess ? card.getSuccessCondition() : null,
+                hasFullAccess ? card.getFailureCondition() : null,
+                hasFullAccess ? card.getEvidenceSummary() : null,
                 card.getResultDueAt(),
                 card.getSalePrice(),
                 card.getStatus(),
@@ -61,10 +63,11 @@ public record CardResponse(
                 latestVerification != null ? latestVerification.getRecommendedPriceMin() : null,
                 latestVerification != null ? latestVerification.getRecommendedPriceMax() : null,
                 detail.sources().size(),
-                detail.sources().stream().map(SourceResponse::from).toList(),
+                hasFullAccess ? detail.sources().stream().map(SourceResponse::from).toList() : List.of(),
                 detail.purchaseCount(),
                 card.getPublishedAt(),
-                card.getCreatedAt()
+                card.getCreatedAt(),
+                hasFullAccess
         );
     }
 }

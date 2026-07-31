@@ -19,6 +19,8 @@ public record AiReviewResponse(
         ReviewLevel counterargumentLevel,
         String counterargumentComment,
         BigDecimal duplicationScore,
+        Long mostSimilarCardId,
+        String mostSimilarCardTitle,
         String overallComment
 ) {
     public static AiReviewResponse from(AiVerification verification) {
@@ -35,6 +37,8 @@ public record AiReviewResponse(
                 verification.getCounterargumentLevel(),
                 verification.getCounterargumentComment(),
                 verification.getDuplicationScore(),
+                verification.getMostSimilarCardId(),
+                verification.getMostSimilarCardTitle(),
                 verification.getOverallComment()
         );
     }

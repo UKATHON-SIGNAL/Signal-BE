@@ -74,15 +74,16 @@ public class CardController {
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime resultDueTo,
             @RequestParam(required = false) AiVerificationStatus aiVerificationStatus,
             @RequestParam(required = false) String keyword,
-            @RequestParam(defaultValue = "LATEST") CardSort sort) {
+            @RequestParam(defaultValue = "LATEST") CardSort sort,
+            @RequestParam(required = false) Long viewerId) {
         CardSearchCriteria criteria = new CardSearchCriteria(
                 status, authorId, priceMin, priceMax, resultDueFrom, resultDueTo, aiVerificationStatus, keyword, sort);
-        return cardService.getCardDetails(criteria).stream().map(CardResponse::from).toList();
+        return cardService.getCardDetails(criteria, viewerId).stream().map(CardResponse::from).toList();
     }
 
     @GetMapping("/{cardId}")
-    public CardResponse getCard(@PathVariable Long cardId) {
-        return CardResponse.from(cardService.getCardDetail(cardId));
+    public CardResponse getCard(@PathVariable Long cardId, @RequestParam(required = false) Long viewerId) {
+        return CardResponse.from(cardService.getCardDetail(cardId, viewerId));
     }
 
     @GetMapping("/recommended")

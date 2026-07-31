@@ -7,5 +7,5 @@ import java.util.List;
 
 public record CardDetail(
         Card card, CreatorProfile authorProfile, AiVerification latestVerification,
-        List<CardSource> sources, int purchaseCount) {
+        List<CardSource> sources, int purchaseCount, boolean hasFullAccess) {
 }

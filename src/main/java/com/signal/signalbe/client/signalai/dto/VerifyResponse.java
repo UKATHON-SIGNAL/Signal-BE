@@ -4,8 +4,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.signal.signalbe.domain.verification.AiVerificationStatus;
 import com.signal.signalbe.domain.verification.ReviewLevel;
 
-import java.math.BigDecimal;
-
 public record VerifyResponse(
         AiVerificationStatus status,
         @JsonProperty("generated_title") String generatedTitle,
@@ -18,7 +16,6 @@ public record VerifyResponse(
         @JsonProperty("missing_variable_comment") String missingVariableComment,
         @JsonProperty("counterargument_level") ReviewLevel counterargumentLevel,
         @JsonProperty("counterargument_comment") String counterargumentComment,
-        @JsonProperty("duplication_score") BigDecimal duplicationScore,
         @JsonProperty("overall_comment") String overallComment
 ) {
 }

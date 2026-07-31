@@ -22,6 +22,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -82,6 +83,7 @@ public class CardService {
         List<CardSource> sources = cardSourceRepository.findByCardId(cardId);
         CreatorProfile authorProfile = creatorProfileRepository.findByUserId(card.getAuthor().getId()).orElse(null);
         long daysUntilResult = ChronoUnit.DAYS.between(LocalDateTime.now(), card.getResultDueAt());
+        DuplicationCheck duplication = checkDuplication(card);
         VerifyResponse response = signalAiClient.verify(new VerifyRequest(
                 card.getClaim(),
                 card.getSuccessCondition(),
@@ -92,7 +94,8 @@ public class CardService {
                 authorProfile != null ? authorProfile.getAverageScore() : null,
                 authorProfile != null ? authorProfile.getTotalEvaluatedCount() : 0,
                 creatorProfileService.getSourceReliability(card.getAuthor().getId()),
-                daysUntilResult
+                daysUntilResult,
+                duplication.score()
         ));
 
         AiVerification verification = new AiVerification(card);
@@ -111,7 +114,9 @@ public class CardService {
                 response.missingVariableComment(),
                 response.counterargumentLevel(),
                 response.counterargumentComment(),
-                response.duplicationScore(),
+                duplication.score(),
+                duplication.mostSimilarCardId(),
+                duplication.mostSimilarCardTitle(),
                 response.overallComment(),
                 LocalDateTime.now()
         );
@@ -163,8 +168,18 @@ public class CardService {
         return buildDetail(getCard(cardId));
     }
 
+    public CardDetail getCardDetail(Long cardId, Long viewerId) {
+        return buildDetail(getCard(cardId), viewerId);
+    }
+
     public List<CardDetail> getCardDetails(CardSearchCriteria criteria) {
-        List<CardDetail> details = getCards(criteria.status()).stream().map(this::buildDetail).toList();
+        return getCardDetails(criteria, null);
+    }
+
+    public List<CardDetail> getCardDetails(CardSearchCriteria criteria, Long viewerId) {
+        List<CardDetail> details = getCards(criteria.status()).stream()
+                .map(card -> buildDetail(card, viewerId))
+                .toList();
 
         List<CardDetail> filtered = details.stream()
                 .filter(d -> criteria.authorId() == null || d.card().getAuthor().getId().equals(criteria.authorId()))
@@ -224,14 +239,46 @@ public class CardService {
             }
         }
 
-        return result.stream().map(this::buildDetail).toList();
+        return result.stream().map(card -> buildDetail(card, userId)).toList();
     }
 
     private static boolean containsIgnoreCase(String source, String keyword) {
         return source != null && source.toLowerCase().contains(keyword.toLowerCase());
     }
 
+    private DuplicationCheck checkDuplication(Card card) {
+        Card mostSimilar = null;
+        double maxSimilarity = 0.0;
+        for (Card other : cardRepository.findByStatus(CardStatus.PUBLISHED)) {
+            if (other.getId().equals(card.getId())) {
+                continue;
+            }
+            double similarity = DuplicationScorer.similarity(card.getClaim(), other.getClaim());
+            if (similarity > maxSimilarity) {
+                maxSimilarity = similarity;
+                mostSimilar = other;
+            }
+        }
+        BigDecimal score = BigDecimal.valueOf(Math.round(maxSimilarity * 100));
+        return new DuplicationCheck(
+                score,
+                mostSimilar != null ? mostSimilar.getId() : null,
+                mostSimilar != null ? mostSimilar.getTitle() : null
+        );
+    }
+
     private CardDetail buildDetail(Card card) {
+        return buildDetail(card, true);
+    }
+
+    private CardDetail buildDetail(Card card, Long viewerId) {
+        boolean hasFullAccess = viewerId != null
+                && (viewerId.equals(card.getAuthor().getId())
+                || purchaseRepository.existsByBuyerIdAndCardId(viewerId, card.getId()));
+        return buildDetail(card, hasFullAccess);
+    }
+
+    private CardDetail buildDetail(Card card, boolean hasFullAccess) {
         CreatorProfile authorProfile = creatorProfileRepository.findByUserId(card.getAuthor().getId()).orElse(null);
         AiVerification latestVerification = aiVerificationRepository
                 .findByCardIdOrderByCreatedAtDesc(card.getId())
@@ -240,6 +287,6 @@ public class CardService {
                 .orElse(null);
         List<CardSource> sources = cardSourceRepository.findByCardId(card.getId());
         int purchaseCount = purchaseRepository.findByCardId(card.getId()).size();
-        return new CardDetail(card, authorProfile, latestVerification, sources, purchaseCount);
+        return new CardDetail(card, authorProfile, latestVerification, sources, purchaseCount, hasFullAccess);
     }
 }

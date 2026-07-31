@@ -15,6 +15,7 @@ public record VerifyRequest(
         @JsonProperty("creator_average_score") BigDecimal creatorAverageScore,
         @JsonProperty("creator_evaluated_count") int creatorEvaluatedCount,
         @JsonProperty("creator_source_reliability") BigDecimal creatorSourceReliability,
-        @JsonProperty("days_until_result") Long daysUntilResult
+        @JsonProperty("days_until_result") Long daysUntilResult,
+        @JsonProperty("existing_duplication_score") BigDecimal existingDuplicationScore
 ) {
 }

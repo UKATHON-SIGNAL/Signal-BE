@@ -67,6 +67,10 @@ public class AiVerification extends BaseTimeEntity {
 
     private BigDecimal duplicationScore;
 
+    private Long mostSimilarCardId;
+
+    private String mostSimilarCardTitle;
+
     @Column(columnDefinition = "TEXT")
     private String overallComment;
 
@@ -94,6 +98,8 @@ public class AiVerification extends BaseTimeEntity {
             ReviewLevel counterargumentLevel,
             String counterargumentComment,
             BigDecimal duplicationScore,
+            Long mostSimilarCardId,
+            String mostSimilarCardTitle,
             String overallComment,
             LocalDateTime reviewedAt
     ) {
@@ -109,6 +115,8 @@ public class AiVerification extends BaseTimeEntity {
         this.counterargumentLevel = counterargumentLevel;
         this.counterargumentComment = counterargumentComment;
         this.duplicationScore = duplicationScore;
+        this.mostSimilarCardId = mostSimilarCardId;
+        this.mostSimilarCardTitle = mostSimilarCardTitle;
         this.overallComment = overallComment;
         this.reviewedAt = reviewedAt;
     }
