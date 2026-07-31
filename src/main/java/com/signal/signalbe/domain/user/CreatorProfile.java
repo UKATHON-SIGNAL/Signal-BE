@@ -1,6 +1,7 @@
 package com.signal.signalbe.domain.user;
 
 import com.signal.signalbe.domain.common.BaseTimeEntity;
+import com.signal.signalbe.domain.result.ResultVerdict;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -18,6 +19,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 
 @Getter
@@ -50,28 +52,29 @@ public class CreatorProfile extends BaseTimeEntity {
     private int totalEvaluatedCount;
 
     @Column(nullable = false)
-    private int successCount;
+    private int invalidCount;
 
     @Column(nullable = false)
-    private BigDecimal successRate;
+    private BigDecimal totalScore;
 
     @Column(nullable = false)
-    private BigDecimal reputationScore;
+    private BigDecimal averageScore;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private CreatorGrade grade;
 
-    private BigDecimal percentileRank;
+    @Enumerated(EnumType.STRING)
+    private CreatorTrend trend;
 
     public CreatorProfile(User user) {
         this.user = user;
         this.verificationStatus = CreatorVerificationStatus.UNVERIFIED;
         this.totalPublishedCount = 0;
         this.totalEvaluatedCount = 0;
-        this.successCount = 0;
-        this.successRate = BigDecimal.ZERO;
-        this.reputationScore = BigDecimal.ZERO;
+        this.invalidCount = 0;
+        this.totalScore = BigDecimal.ZERO;
+        this.averageScore = BigDecimal.ZERO;
         this.grade = CreatorGrade.UNRATED;
     }
 
@@ -79,25 +82,40 @@ public class CreatorProfile extends BaseTimeEntity {
         this.totalPublishedCount += 1;
     }
 
-    public void applyEvaluatedResult(boolean isSuccess) {
-        this.totalEvaluatedCount += 1;
-        if (isSuccess) {
-            this.successCount += 1;
+    public void applyEvaluatedResult(ResultVerdict verdict) {
+        if (verdict == ResultVerdict.INVALID) {
+            this.invalidCount += 1;
+            return;
         }
-        this.successRate = BigDecimal.valueOf(this.successCount)
-                .divide(BigDecimal.valueOf(this.totalEvaluatedCount), 2, java.math.RoundingMode.HALF_UP)
-                .multiply(BigDecimal.valueOf(100));
-        this.reputationScore = this.successRate;
-        this.grade = computeGrade(this.successRate);
+
+        BigDecimal previousAverage = this.averageScore;
+
+        this.totalEvaluatedCount += 1;
+        this.totalScore = this.totalScore.add(BigDecimal.valueOf(verdict.getScore()));
+        this.averageScore = this.totalScore
+                .divide(BigDecimal.valueOf(this.totalEvaluatedCount), 2, RoundingMode.HALF_UP);
+        this.grade = computeGrade(this.averageScore);
+        this.trend = computeTrend(previousAverage, this.averageScore);
     }
 
-    private static CreatorGrade computeGrade(BigDecimal successRate) {
-        if (successRate.compareTo(BigDecimal.valueOf(80)) >= 0) {
+    private static CreatorGrade computeGrade(BigDecimal averageScore) {
+        if (averageScore.compareTo(BigDecimal.valueOf(80)) >= 0) {
             return CreatorGrade.A;
         }
-        if (successRate.compareTo(BigDecimal.valueOf(50)) >= 0) {
+        if (averageScore.compareTo(BigDecimal.valueOf(50)) >= 0) {
             return CreatorGrade.B;
         }
         return CreatorGrade.C;
+    }
+
+    private static CreatorTrend computeTrend(BigDecimal before, BigDecimal after) {
+        int comparison = after.compareTo(before);
+        if (comparison > 0) {
+            return CreatorTrend.UP;
+        }
+        if (comparison < 0) {
+            return CreatorTrend.DOWN;
+        }
+        return CreatorTrend.FLAT;
     }
 }

@@ -16,6 +16,8 @@ public class CreatorProfileController {
 
     @GetMapping
     public CreatorProfileResponse getCreatorProfile(@PathVariable Long userId) {
-        return CreatorProfileResponse.from(creatorProfileService.getByUserId(userId));
+        var profile = creatorProfileService.getByUserId(userId);
+        var sourceReliability = creatorProfileService.getSourceReliability(userId);
+        return CreatorProfileResponse.from(profile, sourceReliability);
     }
 }

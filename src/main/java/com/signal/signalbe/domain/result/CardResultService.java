@@ -48,24 +48,25 @@ public class CardResultService {
 
         ResolveResponse response = signalAiClient.resolve(new ResolveRequest(
                 card.getClaim(), card.getSuccessCondition(), card.getFailureCondition(),
-                actualResult, evidenceSummary));
+                actualResult, evidenceSummary, card.getEvaluationMetric(),
+                card.getFullHitThreshold(), card.getPartialHitThreshold()));
 
         cardResult.applyEvaluation(response.verdict(), response.aiReason(), LocalDateTime.now());
         card.complete();
 
-        updateCreatorPerformance(card.getAuthor().getId(), response.verdict() == ResultVerdict.SUCCESS);
+        updateCreatorPerformance(card.getAuthor().getId(), response.verdict());
 
         return cardResult;
     }
 
-    private void updateCreatorPerformance(Long authorId, boolean isSuccess) {
+    private void updateCreatorPerformance(Long authorId, ResultVerdict verdict) {
         CreatorProfile profile = creatorProfileRepository.findByUserId(authorId)
                 .orElseGet(() -> {
                     User author = userRepository.findById(authorId)
                             .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다. id=" + authorId));
                     return creatorProfileRepository.save(new CreatorProfile(author));
                 });
-        profile.applyEvaluatedResult(isSuccess);
+        profile.applyEvaluatedResult(verdict);
     }
 
     public CardResult getResult(Long cardId) {

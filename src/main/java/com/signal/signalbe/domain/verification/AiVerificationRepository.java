@@ -7,4 +7,6 @@ import java.util.List;
 public interface AiVerificationRepository extends JpaRepository<AiVerification, Long> {
 
     List<AiVerification> findByCardIdOrderByCreatedAtDesc(Long cardId);
+
+    List<AiVerification> findByCard_Author_Id(Long authorId);
 }
