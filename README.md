@@ -29,7 +29,7 @@ Frontend → Signal-BE (Spring Boot, PostgreSQL) → Signal-AI (FastAPI, LangGra
 
 ## API
 
-총 27개 REST API 중 프론트엔드가 실제로 사용하는 23개의 상세 명세는 [`docs/api-spec.md`](docs/api-spec.md)에 정리되어 있습니다 (기본정보/요구사항/Request/시스템처리/Response 형식).
+총 27개 REST API 중 프론트엔드가 실제로 사용하는 23개의 상세 명세는 [`docs/api-spec.md`]([docs/api-spec.md](https://github.com/UKATHON-SIGNAL/Signal-AI/blob/main/README.md))에 정리되어 있습니다 (기본정보/요구사항/Request/시스템처리/Response 형식).
 
 ## 로컬 실행
 
