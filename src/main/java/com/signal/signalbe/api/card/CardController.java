@@ -68,6 +68,7 @@ public class CardController {
     public List<CardResponse> getCards(
             @RequestParam(required = false) CardStatus status,
             @RequestParam(required = false) Long authorId,
+            @RequestParam(required = false) Long categoryId,
             @RequestParam(required = false) Integer priceMin,
             @RequestParam(required = false) Integer priceMax,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime resultDueFrom,
@@ -77,7 +78,8 @@ public class CardController {
             @RequestParam(defaultValue = "LATEST") CardSort sort,
             @RequestParam(required = false) Long viewerId) {
         CardSearchCriteria criteria = new CardSearchCriteria(
-                status, authorId, priceMin, priceMax, resultDueFrom, resultDueTo, aiVerificationStatus, keyword, sort);
+                status, authorId, categoryId, priceMin, priceMax, resultDueFrom, resultDueTo, aiVerificationStatus,
+                keyword, sort);
         return cardService.getCardDetails(criteria, viewerId).stream().map(CardResponse::from).toList();
     }
 

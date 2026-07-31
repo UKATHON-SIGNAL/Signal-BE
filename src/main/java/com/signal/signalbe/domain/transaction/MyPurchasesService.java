@@ -1,6 +1,7 @@
 package com.signal.signalbe.domain.transaction;
 
 import com.signal.signalbe.domain.card.Card;
+import com.signal.signalbe.domain.result.CardResult;
 import com.signal.signalbe.domain.result.CardResultRepository;
 import com.signal.signalbe.domain.result.ResultStatus;
 import com.signal.signalbe.domain.verification.AiVerificationRepository;
@@ -12,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -68,6 +70,21 @@ public class MyPurchasesService {
                 .count();
 
         return new MyPurchasesSummary(purchases.size(), totalAmount, pendingConfirmationCount, bookmarks.size());
+    }
+
+    public List<RecentUpdate> getRecentUpdates(Long userId, int limit) {
+        Set<Long> purchasedCardIds = purchaseRepository.findByBuyerId(userId).stream()
+                .map(purchase -> purchase.getCard().getId())
+                .collect(Collectors.toSet());
+
+        return purchasedCardIds.stream()
+                .map(cardResultRepository::findByCardId)
+                .flatMap(Optional::stream)
+                .filter(result -> result.getStatus() == ResultStatus.EVALUATED)
+                .sorted(Comparator.comparing(CardResult::getEvaluatedAt).reversed())
+                .limit(limit)
+                .map(result -> new RecentUpdate(result.getCard(), result.getEvaluatedAt()))
+                .toList();
     }
 
     private AiVerificationStatus resolveAiVerificationStatus(Card card) {

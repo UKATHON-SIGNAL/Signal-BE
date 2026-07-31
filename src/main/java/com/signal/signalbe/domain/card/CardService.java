@@ -183,6 +183,7 @@ public class CardService {
 
         List<CardDetail> filtered = details.stream()
                 .filter(d -> criteria.authorId() == null || d.card().getAuthor().getId().equals(criteria.authorId()))
+                .filter(d -> criteria.categoryId() == null || d.card().getCategory().getId().equals(criteria.categoryId()))
                 .filter(d -> criteria.priceMin() == null
                         || (d.card().getSalePrice() != null && d.card().getSalePrice() >= criteria.priceMin()))
                 .filter(d -> criteria.priceMax() == null
