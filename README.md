@@ -1,6 +1,6 @@
-# Signal Market — Signal-BE
+# Signal-BE
 
-AI 검증 정보 카드 마켓플레이스 **Signal Market**의 백엔드 서버입니다.
+AI 검증 정보 카드 마켓플레이스 **Signal**의 백엔드 서버입니다.
 작성자가 결과를 예측할 수 있는 형태로 정보를 발행하면, AI 에이전트가 근거·반대논리·기존 카드와의 중복도·작성자 과거 성과를 종합해 검증하고 가격을 제안합니다. 이후 예측 결과가 실제로 확인되면 그 성과가 작성자의 신뢰도 지표에 누적 반영됩니다.
 
 ## 아키텍처
@@ -29,7 +29,7 @@ Frontend → Signal-BE (Spring Boot, PostgreSQL) → Signal-AI (FastAPI, LangGra
 
 ## API
 
-총 27개 REST API 중 프론트엔드가 실제로 사용하는 23개의 상세 명세는 [`docs/api-spec.md`](docs/api-spec.md)에 정리되어 있습니다 (기본정보/요구사항/Request/시스템처리/Response 형식).
+총 27개 REST API 중 프론트엔드가 실제로 사용하는 23개의 상세 명세는 [`docs/api-spec.md`]([docs/api-spec.md](https://github.com/UKATHON-SIGNAL/Signal-AI/blob/main/README.md))에 정리되어 있습니다 (기본정보/요구사항/Request/시스템처리/Response 형식).
 
 ## 로컬 실행
 
