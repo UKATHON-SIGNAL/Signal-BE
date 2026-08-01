@@ -17,7 +17,6 @@ public record CardCreateRequest(
         @NotBlank String failureCondition,
         @NotBlank String evidenceSummary,
         @NotNull @Future LocalDateTime resultDueAt,
-        List<Long> topicIds,
         @NotEmpty List<@Valid SourceRequest> sources
 ) {
 }

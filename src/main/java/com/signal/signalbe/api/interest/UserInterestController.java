@@ -30,13 +30,13 @@ public class UserInterestController {
     @PostMapping
     public ResponseEntity<UserInterestResponse> addInterest(
             @PathVariable Long userId, @Valid @RequestBody UserInterestCreateRequest request) {
-        var interest = userInterestService.addInterest(userId, request.topicId());
+        var interest = userInterestService.addInterest(userId, request.categoryId());
         return ResponseEntity.status(HttpStatus.CREATED).body(UserInterestResponse.from(interest));
     }
 
-    @DeleteMapping("/{topicId}")
-    public ResponseEntity<Void> removeInterest(@PathVariable Long userId, @PathVariable Long topicId) {
-        userInterestService.removeInterest(userId, topicId);
+    @DeleteMapping("/{categoryId}")
+    public ResponseEntity<Void> removeInterest(@PathVariable Long userId, @PathVariable Long categoryId) {
+        userInterestService.removeInterest(userId, categoryId);
         return ResponseEntity.noContent().build();
     }
 }

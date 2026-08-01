@@ -6,8 +6,6 @@ import com.signal.signalbe.client.signalai.dto.VerifyRequest;
 import com.signal.signalbe.client.signalai.dto.VerifyResponse;
 import com.signal.signalbe.domain.category.Category;
 import com.signal.signalbe.domain.category.CategoryRepository;
-import com.signal.signalbe.domain.category.Topic;
-import com.signal.signalbe.domain.category.TopicRepository;
 import com.signal.signalbe.domain.category.UserInterestRepository;
 import com.signal.signalbe.domain.transaction.BookmarkRepository;
 import com.signal.signalbe.domain.transaction.MyPurchaseStatus;
@@ -39,11 +37,9 @@ import java.util.List;
 public class CardService {
 
     private final CardRepository cardRepository;
-    private final CardTopicRepository cardTopicRepository;
     private final CardSourceRepository cardSourceRepository;
     private final UserRepository userRepository;
     private final CategoryRepository categoryRepository;
-    private final TopicRepository topicRepository;
     private final AiVerificationRepository aiVerificationRepository;
     private final CreatorProfileRepository creatorProfileRepository;
     private final CreatorProfileService creatorProfileService;
@@ -56,7 +52,7 @@ public class CardService {
     @Transactional
     public Card createDraft(Long authorId, Long categoryId, String claim, String successCondition,
                              String failureCondition, String evidenceSummary, LocalDateTime resultDueAt,
-                             List<Long> topicIds, List<CardSourceCreation> sources) {
+                             List<CardSourceCreation> sources) {
         User author = userRepository.findById(authorId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다. id=" + authorId));
         Category category = categoryRepository.findById(categoryId)
@@ -64,14 +60,6 @@ public class CardService {
 
         Card card = new Card(author, category, claim, successCondition, failureCondition, evidenceSummary, resultDueAt);
         cardRepository.save(card);
-
-        if (topicIds != null) {
-            for (Long topicId : topicIds) {
-                Topic topic = topicRepository.findById(topicId)
-                        .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 토픽입니다. id=" + topicId));
-                cardTopicRepository.save(new CardTopic(card, topic));
-            }
-        }
 
         for (CardSourceCreation source : sources) {
             cardSourceRepository.save(new CardSource(
@@ -220,15 +208,13 @@ public class CardService {
     }
 
     public List<CardDetail> getRecommendedCards(Long userId, int limit) {
-        List<Long> topicIds = userInterestRepository.findByUserId(userId).stream()
-                .map(interest -> interest.getTopic().getId())
+        List<Long> categoryIds = userInterestRepository.findByUserId(userId).stream()
+                .map(interest -> interest.getCategory().getId())
                 .toList();
 
-        List<Card> matched = topicIds.isEmpty() ? List.of() :
-                cardTopicRepository.findByTopicIdIn(topicIds).stream()
-                        .map(CardTopic::getCard)
-                        .filter(card -> card.getStatus() == CardStatus.PUBLISHED)
-                        .distinct()
+        List<Card> matched = categoryIds.isEmpty() ? List.of() :
+                cardRepository.findByStatus(CardStatus.PUBLISHED).stream()
+                        .filter(card -> categoryIds.contains(card.getCategory().getId()))
                         .toList();
 
         List<Card> result = new ArrayList<>(matched.stream().limit(limit).toList());

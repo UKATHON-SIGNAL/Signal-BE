@@ -8,7 +8,7 @@ public interface UserInterestRepository extends JpaRepository<UserInterest, Long
 
     List<UserInterest> findByUserId(Long userId);
 
-    boolean existsByUserIdAndTopicId(Long userId, Long topicId);
+    boolean existsByUserIdAndCategoryId(Long userId, Long categoryId);
 
-    void deleteByUserIdAndTopicId(Long userId, Long topicId);
+    void deleteByUserIdAndCategoryId(Long userId, Long categoryId);
 }

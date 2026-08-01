@@ -20,7 +20,7 @@ import java.time.LocalDateTime;
 
 @Getter
 @Entity
-@Table(name = "user_interests", uniqueConstraints = @UniqueConstraint(columnNames = {"user_id", "topic_id"}))
+@Table(name = "user_interests", uniqueConstraints = @UniqueConstraint(columnNames = {"user_id", "category_id"}))
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class UserInterest {
 
@@ -33,15 +33,15 @@ public class UserInterest {
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "topic_id", nullable = false)
-    private Topic topic;
+    @JoinColumn(name = "category_id", nullable = false)
+    private Category category;
 
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
-    public UserInterest(User user, Topic topic) {
+    public UserInterest(User user, Category category) {
         this.user = user;
-        this.topic = topic;
+        this.category = category;
         this.createdAt = LocalDateTime.now();
     }
 }

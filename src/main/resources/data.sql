@@ -1,3 +1,7 @@
+ALTER TABLE user_interests DROP COLUMN IF EXISTS topic_id;
+DROP TABLE IF EXISTS card_topics;
+DROP TABLE IF EXISTS topics;
+
 INSERT INTO users (email, password, nickname, role, active, created_at, updated_at) VALUES
 ('kim@example.com', 'dummy-password', '김지훈', 'USER', true, now(), now()),
 ('lee@example.com', 'dummy-password', '이서연', 'USER', true, now(), now()),
@@ -8,23 +12,14 @@ INSERT INTO categories (name, slug, sort_order, active, created_at, updated_at) 
 ('산업·기업', 'industry', 1, true, now(), now()),
 ('거시·경제', 'macro', 2, true, now(), now()),
 ('테크·AI', 'tech-ai', 3, true, now(), now()),
-('소비자 트렌드', 'consumer-trend', 4, true, now(), now())
+('소비자 트렌드', 'consumer-trend', 4, true, now(), now()),
+('전기차', 'ev', 5, true, now(), now()),
+('반도체', 'semiconductor', 6, true, now(), now()),
+('에너지', 'energy', 7, true, now(), now())
 ON CONFLICT (slug) DO NOTHING;
 
-INSERT INTO topics (category_id, name, slug, active, created_at, updated_at)
-SELECT c.id, t.name, t.slug, true, now(), now()
-FROM (VALUES
-    ('industry', '반도체', 'semiconductor'),
-    ('industry', '전기차', 'ev'),
-    ('industry', '에너지', 'energy'),
-    ('industry', '산업·기업', 'industry-topic'),
-    ('macro', '거시경제', 'macro-economy'),
-    ('tech-ai', '테크·AI', 'tech-ai-topic')
-) AS t(category_slug, name, slug)
-JOIN categories c ON c.slug = t.category_slug
-ON CONFLICT (slug) DO NOTHING;
-
-UPDATE topics SET active = false WHERE slug IN ('interest-rate', 'fx', 'ai-agent');
+UPDATE categories SET name = '거시경제' WHERE slug = 'macro';
+UPDATE categories SET active = false WHERE slug = 'consumer-trend';
 
 INSERT INTO creator_profiles (
     user_id, verification_status, bio, total_published_count, total_evaluated_count,
