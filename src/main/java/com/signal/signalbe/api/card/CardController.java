@@ -89,7 +89,7 @@ public class CardController {
 
     @GetMapping("/recommended")
     public List<CardResponse> getRecommendedCards(
-            @RequestParam Long userId, @RequestParam(defaultValue = "3") int limit) {
+            @RequestParam(required = false) Long userId, @RequestParam(defaultValue = "3") int limit) {
         return cardService.getRecommendedCards(userId, limit).stream().map(CardResponse::from).toList();
     }
 }
