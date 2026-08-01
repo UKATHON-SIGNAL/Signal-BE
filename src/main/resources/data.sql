@@ -3,10 +3,12 @@ DROP TABLE IF EXISTS card_topics;
 DROP TABLE IF EXISTS topics;
 
 INSERT INTO users (email, password, nickname, role, active, created_at, updated_at) VALUES
-('kim@example.com', 'dummy-password', '김지훈', 'USER', true, now(), now()),
+('kim@example.com', 'dummy-password', '이지훈', 'USER', true, now(), now()),
 ('lee@example.com', 'dummy-password', '이서연', 'USER', true, now(), now()),
 ('admin@example.com', 'dummy-password', '관리자', 'ADMIN', true, now(), now())
 ON CONFLICT (email) DO NOTHING;
+
+UPDATE users SET nickname = '이지훈' WHERE email = 'kim@example.com';
 
 INSERT INTO categories (name, slug, sort_order, active, created_at, updated_at) VALUES
 ('산업·기업', 'industry', 1, true, now(), now()),
